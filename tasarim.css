@@ -1,0 +1,35 @@
+#sayfa{
+    width: 500px;
+    margin:auto;
+    background: #ffeaa7;
+    padding:20px;
+  }
+  label{
+    display:block;
+    margin-top:5px;
+  }
+  input{
+    width: 200px;
+    height: 25px;
+    font-size:1.2em;
+  }
+  button{
+    border:none;
+    display:block;
+    margin-top:5px;
+    width: 204px;
+    height: 50px;
+    text-align: center;
+    font-size:1.2em;
+  }
+  table{
+    background: #0984e3;
+    margin:5px;
+    width: 100%;
+    color:#fff;
+  }
+  td,th{
+    border:1px solid white;
+    border-spacing: 0px;
+    margin: 0px;
+  }
