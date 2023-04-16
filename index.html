@@ -13,6 +13,13 @@
   <div id="sayfa">
     <label>Ad:</label> <input type="text" id="ad">
     <label>Kontenjan:</label> <input type="text" id="kontenjan">
+    <label for="cars">Saat:</label>
+    <select id="saat" >
+      <option value="0">Monday Morning</option>
+      <option value="1">Monday Afternoon</option>
+      <option value="2">Tuesday Morning</option>
+      <option value="3">Tuesday Afternoon</option>
+    </select>
     <!-- <label>Sınıf:</label>   <input type="number"  id="sinif"> -->
   
     <button id="ekle" onclick="cond()">Tabloya Ekle</button>
@@ -21,6 +28,7 @@
         <th>Ders Adı</th>
         <th>Kontenjan</th>
         <th>Sınıf</th>
+        <th>Saat</th>
       </tr>
     </table>
   </div>
@@ -29,6 +37,7 @@
   <script>
     const ad = document.querySelector("#ad");
     const kontenjan = document.querySelector("#kontenjan");
+    const saat = document.querySelector("#saat");
     //const sinif = document.querySelector("#sinif");
     const ekle = document.querySelector("#ekle");//tıklama olayı eklenecek
     const liste = document.querySelector("#liste");
@@ -40,11 +49,15 @@
       let tAd = document.createElement("td");
       let tKontenjan = document.createElement("td");
       let tSinif = document.createElement("td");
+      let tSaat = document.createElement("td");
 
       tAd.textContent = ad.value;//textboxtan değeri okuyup aktarıyoruz.
       tKontenjan.textContent = kontenjan.value;//textboxtan değeri okuyup aktarıyoruz.
      // tSinif.textContent=sinif.value;//textboxtan değeri okuyup aktarıyoruz.
       tSinif.textContent = " ";
+      tSaat.textContent = saat.value;
+
+      //kontenjan kontrolu yaparak sınıf atama
       if(tKontenjan.textContent<180 && tKontenjan.textContent>61){
         tSinif.textContent="B503";
        // alert("ilk");
@@ -58,17 +71,42 @@
         tSinif.textContent="C501 - C408";
        // alert("son");
       }
+      else{
+        alert("Kontenjan max 180 olabilir.")
+      }
      // alert(tSinif.textContent);
      // alert(tKontenjan.textContent);
 
       //tr elementi oluşturuyoruz
       let tr = document.createElement("tr");
 
+      let saatlerDictinory =
+      {
+        "0":"Monday Morning",
+        "1":"Monday Afternoon"
+      }
+      alert(tSaat.textContent)
+
+      if(tSaat.textContent == 0){
+        tSaat.textContent ="Monday Morning";
+      }
+      if(tSaat.textContent == 1){
+        tSaat.textContent ="Monday Afternoon";
+      }
+     
+      if(tSaat.textContent == 2){
+        tSaat.textContent ="Tuesday Morning";
+      }
+     if(tSaat.textContent ==3){
+        tSaat.textContent == "Tuesday Afternoon"
+      }
+      alert(tSaat.textContent)
+
       //tdleri tr içine ekliyoruz
       tr.appendChild(tAd);
       tr.appendChild(tKontenjan);
-    
       tr.appendChild(tSinif);
+      tr.appendChild(tSaat);
 
       //tr elementini liste (tablo) içine ekliyoruz
       liste.appendChild(tr);
@@ -76,11 +114,12 @@
       //nenelerin için eklemeden sonra temizleyelim
       ad.value = "";
       kontenjan.value = "";
-      yas.value = "";
+      saat.value = "";
 
       //temizlemeden sonra ad içine odaklansın
       ad.focus();
     }
+    saatler =[]
 
   </script>
 </body>
