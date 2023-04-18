@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>File Input Example</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .input-container label {
+            flex-shrink: 0;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .input-container input[type="file"] {
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<script type="text/javascript" src="Main.js"></script>
+
+<body>
+    <div class="input-container">
+        <label for="courses">Courses:</label>
+        <input type="file" id="courses" name="busy">
+    </div>
+    <div class="input-container">
+        <label for="busy">Busy:</label>
+        <input type="file" id="busy" name="classroom">
+    </div>
+    <div class="input-container">
+        <label for="classroom">Classroom:</label>
+        <input type="file" id="classroom" name="courses">
+    </div>
+    <div class="input-container">
+        <label for="service">Service:</label>
+        <input type="file" id="service" name="service">
+    </div>
+   
+    
+</body>
