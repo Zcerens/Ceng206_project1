@@ -407,6 +407,48 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
+
+    function anyCourseLeft(d_list, stack_left) {
+        let flag = true;
+        for (let d of d_list) {
+            if (!d._hasRoom) {
+                stack_left.push(d);
+                flag = false;
+            }
+        }
+        return flag;
+    }
+
+    function placeLeftCourses(schedule, stack_left, stack_replaced) {
+        let flag2 = true;
+        for (let c of stack_left) {
+            flag2 = true;
+            for (let day of days) {
+                for (let time of times) {
+                    for (let i = 0; i < schedule[day][time].length; i++) {
+                        if (!hasSameYear(schedule[day][time], c._year) && !find(service_courses, schedule[day][time][i]._code)) {
+                            let course = find_obj(department_courses, schedule[day][time][i]._code);
+                            course.setEmpty();
+                            schedule[day][time][i].replace(c._code);
+                            c.setRoom();
+                            stack_replaced.push(course);
+                            flag2 = false;
+                        }
+                        if (!flag2) {
+                            break;
+                        }
+                    }
+                    if (!flag2) {
+                        break;
+                    }
+                }
+                if (!flag2) {
+                    break;
+                }
+            }
+        }
+    }
+
     //alert("excele girdi")
     //console.log(file)
     //console.log(department_courses)
@@ -434,46 +476,9 @@ document.addEventListener('DOMContentLoaded', function () {
         schedule.display();
     }
 
-        function anyCourseLeft(d_list, stack_left) {
-            let flag = true;
-            for (let d of d_list) {
-                if (!d._hasRoom) {
-                    stack_left.push(d);
-                    flag = false;
-                }
-            }
-            return flag;
-        }
+ 
 
-        function placeLeftCourses(schedule, stack_left, stack_replaced) {
-            let flag2 = true;
-            for (let c of stack_left) {
-                flag2 = true;
-                for (let day of days) {
-                    for (let time of times) {
-                        for (let i = 0; i < schedule[day][time].length; i++) {
-                            if (!hasSameYear(schedule[day][time], c._year) && !find(service_courses, schedule[day][time][i]._code)) {
-                                let course = find_obj(department_courses, schedule[day][time][i]._code);
-                                course.setEmpty();
-                                schedule[day][time][i].replace(c._code);
-                                c.setRoom();
-                                stack_replaced.push(course);
-                                flag2 = false;
-                            }
-                            if (!flag2) {
-                                break;
-                            }
-                        }
-                        if (!flag2) {
-                            break;
-                        }
-                    }
-                    if (!flag2) {
-                        break;
-                    }
-                }
-            }
-        }
+ 
 
 
 
@@ -584,28 +589,29 @@ document.addEventListener('DOMContentLoaded', function () {
 //         }
 //     }
 // }
+
+
+// let stack_left = [];
+// let stack_replaced = [];
+
+// makeSchedule(schedule, department_courses);
+// var flag = anyCourseLeft(department_courses, stack_left); // if there is left over courses flag is false, left courses will be printed -> schedule is not completed
+
+// if (!flag) { // there are courses that don't have any room
+// placeLeftCourses(schedule.schedule_table, stack_left, stack_replaced); // place these courses to available place
+// makeSchedule(schedule, stack_replaced); // place replaced courses to schedule
+// flag = anyCourseLeft(department_courses, stack_left); // if flag is true, there is a schedule
+// if (flag) {
+// console.log("\nThere is a schedule: \n");
+// schedule.display();
+// }
+// else { // if flag is false, no schedule is produced for courses
+// console.log("There is no way to make a schedule for the department.");
+// }
+// }
+// else { // if flag is true, there is a schedule
+// console.log("\n*There is a schedule: \n");
+// schedule.display();
+// }
 })
 })
-let stack_left = [];
-let stack_replaced = [];
-
-makeSchedule(schedule, department_courses);
-var flag = anyCourseLeft(department_courses, stack_left); // if there is left over courses flag is false, left courses will be printed -> schedule is not completed
-
-if (!flag) { // there are courses that don't have any room
-placeLeftCourses(schedule.schedule_table, stack_left, stack_replaced); // place these courses to available place
-makeSchedule(schedule, stack_replaced); // place replaced courses to schedule
-flag = anyCourseLeft(department_courses, stack_left); // if flag is true, there is a schedule
-if (flag) {
-console.log("\nThere is a schedule: \n");
-schedule.display();
-}
-else { // if flag is false, no schedule is produced for courses
-console.log("There is no way to make a schedule for the department.");
-}
-}
-else { // if flag is true, there is a schedule
-console.log("\n*There is a schedule: \n");
-schedule.display();
-}
-
