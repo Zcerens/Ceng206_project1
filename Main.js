@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () { // DOMContentLoaded 
                     service_courses.push(new Course(row[0], row[1], row[2], row[3], row[4], row[5], row[6], new Instructor(row[7])));
                 }
             }
-            all_courses = department_courses + service_courses;
+  
             console.log("Csv dataam:")
             console.log(csvData)
             department_courses.forEach(element => {
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             for (let i = 0; i < csv_rows.length - 1; i++) {
                 const row = csv_rows[i].split(';');
-                console.log(row);
+                // console.log(row);
 
         let s_course = find_obj(service_courses, row[0]); // finding service course by its id
         if (schedule.hasRoom4(row[1], row[2]) && (s_course._compulsary_elective == "C" || !schedule.hasRoom3(row[1], row[2]) || !schedule.hasRoom2(row[1], row[2]) || !schedule.hasRoom1(row[1], row[2]))) { // compulsory or there is no room for elective
@@ -366,11 +366,13 @@ document.addEventListener('DOMContentLoaded', function () {
     
 
     }
-
+    let all_courses = department_courses.concat(service_courses);
     reader.readAsText(file);    
     function hasSameYear(schedule, year) {
         for (let s of schedule) {
+            console.log(s._code);
             let course = find_obj(all_courses, s._code);
+            console.log(all_courses._year);
             if (course._year == year) { //?
                 console.log('LOPtayımmm');
                 return true;
@@ -432,8 +434,6 @@ document.addEventListener('DOMContentLoaded', function () {
         schedule.display();
     }
 
-    })
-})
         function anyCourseLeft(d_list, stack_left) {
             let flag = true;
             for (let d of d_list) {
@@ -584,7 +584,8 @@ document.addEventListener('DOMContentLoaded', function () {
 //         }
 //     }
 // }
-
+})
+})
 let stack_left = [];
 let stack_replaced = [];
 
@@ -607,3 +608,4 @@ else { // if flag is true, there is a schedule
 console.log("\n*There is a schedule: \n");
 schedule.display();
 }
+
