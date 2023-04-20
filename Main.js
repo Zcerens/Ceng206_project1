@@ -141,7 +141,7 @@ class Schedule {
         return false;
     }
 
-    addToSchedule(code, roomSize, day, time) {
+    addToSchedule(code, roomSize, day, time) { //roomSize yerine capacity
         let room;
         if (roomSize > 100) {
             this.used_room4[day][time] += 1;
@@ -155,7 +155,7 @@ class Schedule {
         } else {
             this.used_room1[day][time] += 1;
             room = (roomSize + this.used_room1[day][time])
-            this.schedule_table[day][time].append(ScheduleFormat(code, room, day, time)) //?
+            this.schedule_table[day][time].push(new ScheduleFormat(code, room, day, time)) //?
         }
     }
     display() {
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () { // DOMContentLoaded 
         reader.onload = async function (e) {
             const csvData = e.target.result;
             console.log(csvData)
-            const csv_rows = csvData.split('\n');
+            const csv_rows = csvData.split('\r\n');
             console.log(csv_rows)
             console.log(csv_rows.length)
 
@@ -246,6 +246,7 @@ document.addEventListener('DOMContentLoaded', function () { // DOMContentLoaded 
                     service_courses.push(new Course(row[0], row[1], row[2], row[3], row[4], row[5], row[6], new Instructor(row[7])));
                 }
             }
+            all_courses = department_courses + service_courses;
             console.log("Csv dataam:")
             console.log(csvData)
             department_courses.forEach(element => {
@@ -268,6 +269,7 @@ document.addEventListener('DOMContentLoaded', function () { // DOMContentLoaded 
 // Dosya seçme elementine bir olay dinleyici ekleyin ve bir dosya seçildiğinde veri işleme işlemini yapın
 document.addEventListener('DOMContentLoaded', function () {
 document.getElementById('busy').addEventListener('change', async function () {
+    console.log("Heyyy");
     // Seçilen dosyayı alın
     const file = this.files[0];
     // Dosya içeriğini metin olarak okuyun
@@ -275,16 +277,22 @@ document.getElementById('busy').addEventListener('change', async function () {
     // Metni CSV satırlarına ayırın
     const csv_rows = text.split('\n');
     // CSV satırlarını işleyin
+    console.log("\n"+csv_rows.length+ "busy row");
     for (let i = 0; i < csv_rows.length; i++) {
+        console.log("Lopta\n");
       const row = csv_rows[i].split(';');
+      console.log(row[0]);
+      console.log(find(instructor_list, row[0]));
       if (find(instructor_list, row[0])) {  // Eğer böyle bir eğitmen varsa
+        console.log("Hoca buldu\n");
           find_obj(instructor_list, row[0]).setBusyTime(row[1], row[2]);
       }
     }
     // İşlenen verileri konsola yazdırın
+    // console.log(instructor_list[0].toString + "Hoca");
     instructor_list.forEach(element => {
-      console.log(element);
-    });
+        console.log(element);
+      });
   });
 });
 
@@ -297,11 +305,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('classroom').addEventListener('change', async function(event) {
         const file = event.target.files[0];
         const text = await file.text();
-        const csv_rows = text.split('\n');
+        const csv_rows = text.split('\r\n');
+        console.log(csv_rows);
       
         let room1, room2, room3, room4;
       
-        for (let i = 0; i < csv_rows.length; i++) {
+        for (let i = 0; i < csv_rows.length -1; i++) {
             const row = csv_rows[i].split(';');
             if (parseInt(row[1]) > 100) {
                 room4 = row[0];
@@ -314,111 +323,267 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
       
-        console.log(room1, room2, room3, room4);
+        console.log(room1 + " room1, " + room2 + " room2, " + room3 + " room3, " + room4+ " room4" );
     });
 })
 
 let schedule = new Schedule(room1, room2, room3, room4); // new instance of a schedule
 
 
+document.addEventListener('DOMContentLoaded', function () {
+    // service dosyası yüklendiğinde yapılacak işlemler
+    document.getElementById('service').addEventListener('change', async function(event)
+    {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async function (e) {
+            const csvData = e.target.result;
+        //    console.log(csvData)
+            const csv_rows = csvData.split('\r\n');
+            // console.log(csv_rows)
+            // console.log(csv_rows.length)
 
-fs.createReadStream('C:\Users\FIRAT1453\Desktop\ilk hali\Ceng206_project1-main\tables\service.csv')
-.pipe(csv.parse({ delimiter: ';' }))
-.on('data', function(row) {
-let s_course = find_obj(service_courses, row[0]); // finding service course by its id
-if (schedule.hasRoom4(row[1], row[2]) && (s_course._compulsary_elective == "C" || !schedule.hasRoom3(row[1], row[2]) || !schedule.hasRoom2(row[1], row[2]) || !schedule.hasRoom1(row[1], row[2]))) { // compulsory or there is no room for elective
-schedule.addToSchedule(row[0], s_course._capacity, row[1], row[2]); // code, room, day, time
-s_course.setRoom(); // set hasRoom == true
-} else if (schedule.hasRoom3(row[1], row[2])) {
-    schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
-    s_course.setRoom(); // set hasRoom == true
-}else if (schedule.hasRoom2(row[1], row[2])){
-    schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
-    s_course.setRoom(); // set hasRoom == true
-}else if (schedule.hasRoom1(row[1], row[2])){
-    schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
-    s_course.setRoom(); // set hasRoom == true
-}
-})
-.on('end', function() {
-let all_courses = department_courses.concat(service_courses); // all courses
-function hasSameYear(schedule, year) {
-    for (let s of schedule) {
-        let course = find_obj(all_courses, s._code);
-        if (course._year == year) {
-            return true;
+            for (let i = 0; i < csv_rows.length - 1; i++) {
+                const row = csv_rows[i].split(';');
+                console.log(row);
+
+        let s_course = find_obj(service_courses, row[0]); // finding service course by its id
+        if (schedule.hasRoom4(row[1], row[2]) && (s_course._compulsary_elective == "C" || !schedule.hasRoom3(row[1], row[2]) || !schedule.hasRoom2(row[1], row[2]) || !schedule.hasRoom1(row[1], row[2]))) { // compulsory or there is no room for elective
+            schedule.addToSchedule(row[0], s_course._capacity, row[1], row[2]); // code, room, day, time
+            s_course.setRoom(); // set hasRoom == true
+        } else if (schedule.hasRoom3(row[1], row[2])) {
+            schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
+            s_course.setRoom(); // set hasRoom == true
+        } else if (schedule.hasRoom2(row[1], row[2])) {
+            schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
+            s_course.setRoom(); // set hasRoom == true
+        } else if (schedule.hasRoom1(row[1], row[2])) {
+            schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
+            s_course.setRoom(); // set hasRoom == true
         }
     }
-    return false;
-}
-function makeSchedule(schedule, d_list) {
-    // department courses will be added to schedule according to the defined constraints 
-    for (let d_c of d_list) {
-        for (let day of days) {
-            for (let time of times) {
-                if (d_c._hasRoom || d_c._instructor.isBusy(day, time)) { // if the course has already been assigned a room or instructor is busy at that time
-                    break;
-                } else if (!hasSameYear(schedule.schedule_table[day][time], d_c._year)) { // if the course already present in that time slot is not the same as the one we are about to insert
-                    if (schedule.hasRoom4(day, time) && (d_c._compulsary_elective == "C" || !schedule.hasRoom3(day, time) || !schedule.hasRoom2(day, time) || !schedule.hasRoom1(day, time))) {
-                        schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
-                        d_c.setRoom(); // set hasRoom == true
-                    } else if (d_c._compulsary_elective == "E" && schedule.room3(day, time)) {
-                        schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
-                        d_c.setRoom(); // set hasRoom == true
-                    }else if (d_c._compulsary_elective == "E" && schedule.room2(day, time)) {
-                        schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
-                        d_c.setRoom(); // set hasRoom == true
-                    }else if (d_c._compulsary_elective == "E" && schedule.room1(day, time)) {
-                        schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
-                        d_c.setRoom(); // set hasRoom == true
+
+    
+
+    }
+
+    reader.readAsText(file);    
+    function hasSameYear(schedule, year) {
+        for (let s of schedule) {
+            let course = find_obj(all_courses, s._code);
+            if (course._year == year) { //?
+                console.log('LOPtayımmm');
+                return true;
+            }
+        }
+        return false;
+    }
+    async function makeSchedule (schedule, d_list){
+        alert("makeSchedule")
+        // department courses will be added to schedule according to the defined constraints 
+        for (let d_c of d_list) {
+            for (let day of days) {
+                for (let time of times) {
+                    if (d_c._hasRoom || d_c._instructor.isBusy(day, time)) { // if the course has already been assigned a room or instructor is busy at that time
+                        break;
+                    } else if (!hasSameYear(schedule.schedule_table[day][time], d_c._year)) { // if the course already present in that time slot is not the same as the one we are about to insert
+                        if (schedule.hasRoom4(day, time) && (d_c._compulsary_elective == "C" || !schedule.hasRoom3(day, time) || !schedule.hasRoom2(day, time) || !schedule.hasRoom1(day, time))) {
+                            schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+                            d_c.setRoom(); // set hasRoom == true
+                        } else if (d_c._compulsary_elective == "E" && schedule.hasRoom3(day, time)) {
+                            schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+                            d_c.setRoom(); // set hasRoom == true
+                        } else if (d_c._compulsary_elective == "E" && schedule.hasRoom2(day, time)) {
+                            schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+                            d_c.setRoom(); // set hasRoom == true
+                        } else if (d_c._compulsary_elective == "E" && schedule.hasRoom1(day, time)) {
+                            schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+                            d_c.setRoom(); // set hasRoom == true
+                        }
                     }
                 }
             }
         }
     }
-}
+    //alert("excele girdi")
+    //console.log(file)
+    //console.log(department_courses)
+    let stack_left = [];
+    let stack_replaced = [];
+    console.log("BAKKKKK")
+    console.log(department_courses)
+    makeSchedule( schedule, department_courses);
+    var flag = anyCourseLeft(department_courses, stack_left); // if there is left over courses flag is false, left courses will be printed -> schedule is not completed
 
-
-function anyCourseLeft(d_list, stack_left) {
-    let flag = true;
-    for (let d of d_list) {
-        if (!d._hasRoom) {
-            stack_left.push(d);
-            flag = false;
+    if (!flag) { // there are courses that don't have any room
+        placeLeftCourses(schedule.schedule_table, stack_left, stack_replaced); // place these courses to available place
+        makeSchedule(schedule, stack_replaced); // place replaced courses to schedule
+        flag = anyCourseLeft(department_courses, stack_left); // if flag is true, there is a schedule
+        if (flag) {
+            console.log("\nThere is a schedule: \n");
+            schedule.display();
+        }
+        else { // if flag is false, no schedule is produced for courses
+            console.log("There is no way to make a schedule for the department.");
         }
     }
-    return flag;
-}
+    else { // if flag is true, there is a schedule
+        console.log("\n*There is a schedule: \n");
+        schedule.display();
+    }
 
-function placeLeftCourses(schedule, stack_left, stack_replaced) {
-    let flag2 = true;
-    for (let c of stack_left) {
-        flag2 = true;
-        for (let day of days) {
-            for (let time of times) {
-                for (let i = 0; i < schedule[day][time].length; i++) {
-                    if (!hasSameYear(schedule[day][time], c._year) && !find(service_courses, schedule[day][time][i]._code)) {
-                        let course = find_obj(department_courses, schedule[day][time][i]._code);
-                        course.setEmpty();
-                        schedule[day][time][i].replace(c._code);
-                        c.setRoom();
-                        stack_replaced.push(course);
-                        flag2 = false;
+    })
+})
+        function anyCourseLeft(d_list, stack_left) {
+            let flag = true;
+            for (let d of d_list) {
+                if (!d._hasRoom) {
+                    stack_left.push(d);
+                    flag = false;
+                }
+            }
+            return flag;
+        }
+
+        function placeLeftCourses(schedule, stack_left, stack_replaced) {
+            let flag2 = true;
+            for (let c of stack_left) {
+                flag2 = true;
+                for (let day of days) {
+                    for (let time of times) {
+                        for (let i = 0; i < schedule[day][time].length; i++) {
+                            if (!hasSameYear(schedule[day][time], c._year) && !find(service_courses, schedule[day][time][i]._code)) {
+                                let course = find_obj(department_courses, schedule[day][time][i]._code);
+                                course.setEmpty();
+                                schedule[day][time][i].replace(c._code);
+                                c.setRoom();
+                                stack_replaced.push(course);
+                                flag2 = false;
+                            }
+                            if (!flag2) {
+                                break;
+                            }
+                        }
+                        if (!flag2) {
+                            break;
+                        }
                     }
                     if (!flag2) {
                         break;
                     }
                 }
-                if (!flag2) {
-                    break;
-                }
-            }
-            if (!flag2) {
-                break;
             }
         }
-    }
-}
+
+
+
+
+// let schedule = new Schedule(room1, room2, room3, room4); // new instance of a schedule
+
+
+
+// // fs.createReadStream('C:\Users\eseym\Desktop\service.csv')
+// // .pipe(csv.parse({ delimiter: ';' }))
+// // .on('data', function(row) {
+//     document.addEventListener('DOMContentLoaded', function() {
+//         // classroom dosyası yüklendiğinde yapılacak işlemler
+//         document.getElementById('service').addEventListener('change', async function(event) {
+// let s_course = find_obj(service_courses, row[0]); // finding service course by its id
+// if (schedule.hasRoom4(row[1], row[2]) && (s_course._compulsary_elective == "C" || !schedule.hasRoom3(row[1], row[2]) || !schedule.hasRoom2(row[1], row[2]) || !schedule.hasRoom1(row[1], row[2]))) { // compulsory or there is no room for elective
+// schedule.addToSchedule(row[0], s_course._capacity, row[1], row[2]); // code, room, day, time
+// s_course.setRoom(); // set hasRoom == true
+// } else if (schedule.hasRoom3(row[1], row[2])) {
+//     schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
+//     s_course.setRoom(); // set hasRoom == true
+// }else if (schedule.hasRoom2(row[1], row[2])){
+//     schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
+//     s_course.setRoom(); // set hasRoom == true
+// }else if (schedule.hasRoom1(row[1], row[2])){
+//     schedule.addToSchedule(row[0], s_course.capacity, row[1], row[2]); // code, room, day, time
+//     s_course.setRoom(); // set hasRoom == true
+// }
+// // })
+// });
+// })
+// .on('end', function() {
+// let all_courses = department_courses.concat(service_courses); // all courses
+// function hasSameYear(schedule, year) {
+//     for (let s of schedule) {
+//         let course = find_obj(all_courses, s._code);
+//         if (course._year == year) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+// function makeSchedule(schedule, d_list) {
+//     // department courses will be added to schedule according to the defined constraints 
+//     for (let d_c of d_list) {
+//         for (let day of days) {
+//             for (let time of times) {
+//                 if (d_c._hasRoom || d_c._instructor.isBusy(day, time)) { // if the course has already been assigned a room or instructor is busy at that time
+//                     break;
+//                 } else if (!hasSameYear(schedule.schedule_table[day][time], d_c._year)) { // if the course already present in that time slot is not the same as the one we are about to insert
+//                     if (schedule.hasRoom4(day, time) && (d_c._compulsary_elective == "C" || !schedule.hasRoom3(day, time) || !schedule.hasRoom2(day, time) || !schedule.hasRoom1(day, time))) {
+//                         schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+//                         d_c.setRoom(); // set hasRoom == true
+//                     } else if (d_c._compulsary_elective == "E" && schedule.room3(day, time)) {
+//                         schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+//                         d_c.setRoom(); // set hasRoom == true
+//                     }else if (d_c._compulsary_elective == "E" && schedule.room2(day, time)) {
+//                         schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+//                         d_c.setRoom(); // set hasRoom == true
+//                     }else if (d_c._compulsary_elective == "E" && schedule.room1(day, time)) {
+//                         schedule.addToSchedule(d_c._code, d_c._capacity, day, time); // code, room, day, time
+//                         d_c.setRoom(); // set hasRoom == true
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
+// function anyCourseLeft(d_list, stack_left) {
+//     let flag = true;
+//     for (let d of d_list) {
+//         if (!d._hasRoom) {
+//             stack_left.push(d);
+//             flag = false;
+//         }
+//     }
+//     return flag;
+// }
+
+// function placeLeftCourses(schedule, stack_left, stack_replaced) {
+//     let flag2 = true;
+//     for (let c of stack_left) {
+//         flag2 = true;
+//         for (let day of days) {
+//             for (let time of times) {
+//                 for (let i = 0; i < schedule[day][time].length; i++) {
+//                     if (!hasSameYear(schedule[day][time], c._year) && !find(service_courses, schedule[day][time][i]._code)) {
+//                         let course = find_obj(department_courses, schedule[day][time][i]._code);
+//                         course.setEmpty();
+//                         schedule[day][time][i].replace(c._code);
+//                         c.setRoom();
+//                         stack_replaced.push(course);
+//                         flag2 = false;
+//                     }
+//                     if (!flag2) {
+//                         break;
+//                     }
+//                 }
+//                 if (!flag2) {
+//                     break;
+//                 }
+//             }
+//             if (!flag2) {
+//                 break;
+//             }
+//         }
+//     }
+// }
 
 let stack_left = [];
 let stack_replaced = [];
@@ -441,4 +606,4 @@ console.log("There is no way to make a schedule for the department.");
 else { // if flag is true, there is a schedule
 console.log("\n*There is a schedule: \n");
 schedule.display();
-}})
+}
